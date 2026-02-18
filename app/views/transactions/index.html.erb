@@ -1,14 +1,95 @@
+<style>
+  table { border-collapse: collapse; width: auto; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background: #f5f5f5; }
+</style>
+
 <h1>KelloggCoin Ledger</h1>
 
-<!-- Step 1: List all transactions, starting with the ICO -->
+<table>
+  <tr>
+    <th>Transaction Number</th>
+    <th>Seller</th>
+    <th>Buyer</th>
+    <th>Amount</th>
+  </tr>
+  <%
+  counter = 1
+  for trxn in @transactions
+    from_user = trxn["from_user_id"]
+    to_user = trxn["to_user_id"]
+    amount = trxn["amount"]
+  %>
+  <tr>
+    <td><%= counter %></td>
+    <td>
+      <% if from_user != nil %>
+        <%= @users.find_by({"id" => from_user})["name"] %>
+      <% else %>
+        Initial Coin Offering
+      <%end%>
+    </td>
+    <td><%= @users.find_by({"id" => to_user})["name"]%></td>
+    <td><%= amount %> </td>
+  </tr>
+  <% counter += 1%>
+  <% end %>
+</table>
 
-<!-- Step 2: Calculate and display the balances -->
-
-<!-- 
-Expected balances:
-Balance for Brian: 1348 KC
-Balance for Ben: 2516 KC
-Balance for Evan: 1164 KC
-Balance for Anthony: 1456 KC
-Balance for Krystina: 3516 KC 
+<!-- This is the code for the string variant
+<ol>
+<%
+  for trxn in @transactions
+    from_user = trxn["from_user_id"]
+    to_user = trxn["to_user_id"]
+    amount = trxn["amount"]
+%>
+  <li>
+    <% if from_user != nil %>
+      <%= amount %> KC from <%= @users.find_by({"id" => from_user})["name"] %> to <%= @users.find_by({"id" => to_user})["name"]%>
+    <% else %>
+      Initial coin offering: <%= amount %> to <%= @users.find_by({"id" => to_user})["name"]%>
+    <% end %>
+  </li>
+<% end %>
+</ol>
 -->
+
+<h1> User Balances </h1>
+<%
+  balances = @users.pluck(:name).index_with { 0 }
+
+  for trxn in @transactions
+    from_user = trxn["from_user_id"]
+    to_user = trxn["to_user_id"]
+    amount = trxn["amount"]
+
+    if from_user != nil
+      balances[@users.find_by({"id" => from_user})["name"]] -= amount
+    end
+    if to_user != nil
+      balances[@users.find_by({"id" => to_user})["name"]] += amount
+    end
+  end
+%>
+
+<table>
+  <tr>
+    <th>Owner</th>
+    <th>KelloggCoin Balance</th>
+  </tr>
+  <% for balance in balances %>
+  <tr>
+    <td><%= balance[0] %></td>
+    <td><%= balance[1] %></td>
+  </tr>
+  <% end %>
+</table>
+
+
+<!-- The code for the string variant
+<% for balance in balances %>
+<li> Balance for <%= balance[0] %>: <%= balance[1] %> KC </li>
+<% end %>
+-->
+
